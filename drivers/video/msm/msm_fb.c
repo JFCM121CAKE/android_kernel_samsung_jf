@@ -45,6 +45,7 @@
 #include <linux/sync.h>
 #include <linux/sw_sync.h>
 #include <linux/file.h>
+#include <linux/lcd_notify.h>
 
 #ifdef CONFIG_SEC_DEBUG
 #include <mach/sec_debug.h>
@@ -1092,6 +1093,7 @@ static int msm_fb_blank_sub(int blank_mode, struct fb_info *info,
 
 	switch (blank_mode) {
 	case FB_BLANK_UNBLANK:
+		lcd_notifier_call_chain(LCD_EVENT_ON_START, NULL);
 		mutex_lock(&power_state_chagne);
 		bl_updated = 1;
 		if (mdp_fb_is_power_off(mfd)) {
@@ -1104,6 +1106,7 @@ static int msm_fb_blank_sub(int blank_mode, struct fb_info *info,
 			}
 		}
 		mutex_unlock(&power_state_chagne);
+		lcd_notifier_call_chain(LCD_EVENT_ON_END, NULL);
 		break;
 
 	case FB_BLANK_VSYNC_SUSPEND:
@@ -1125,6 +1128,7 @@ static int msm_fb_blank_sub(int blank_mode, struct fb_info *info,
 	case FB_BLANK_NORMAL:
 	case FB_BLANK_POWERDOWN:
 	default:
+		lcd_notifier_call_chain(LCD_EVENT_OFF_START, NULL);
 		mutex_lock(&power_state_chagne);
 		if (mdp_fb_is_power_on(mfd)) {
 			cur_power_state = mfd->panel_power_state;
@@ -1156,6 +1160,7 @@ static int msm_fb_blank_sub(int blank_mode, struct fb_info *info,
 			mfd->op_enable = TRUE;
 		}
 		mutex_unlock(&power_state_chagne);
+		lcd_notifier_call_chain(LCD_EVENT_OFF_END, NULL);
 		break;
 	}
 
